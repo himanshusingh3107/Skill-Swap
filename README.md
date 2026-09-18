@@ -3,7 +3,7 @@
 
 > **Hackathon ID:** `[C2C-AI-SKILLSWAP-2026]`  
 > **Event:** Code2Career AI Hackathon  
-> **Stack:** Python 3, Flask, SQLite (SQLAlchemy ORM), HTML5, CSS3, Vanilla JS  
+> **Stack:** Python 3, Flask, SQLite (SQLAlchemy ORM), Semantic HTML5, Pure CSS3 (Zero JavaScript)  
 
 ---
 
@@ -18,7 +18,7 @@ Ever needed a standout logo, polished video edits, or quick Python debugging hel
 ## ✨ Core Features
 
 * **🎨 Creator & Client Dual Hub:** Users can browse listings as a client or switch to their Creator View on the dashboard to manage bookings, track earnings, and launch new services.
-* **🔍 Dynamic Marketplace:** Search gigs in real-time or filter by disciplines:
+* **🔍 Dynamic Marketplace:** Search gigs or filter by creative disciplines:
   * 🎨 **Design** (Brand identity, Figma kits, UI/UX)
   * 🎬 **Editing** (Short-form Reels, YouTube pacing, podcast sound clean-up)
   * 📚 **Tutoring** (Python, algorithms, STEM problem-solving)
@@ -26,7 +26,7 @@ Ever needed a standout logo, polished video edits, or quick Python debugging hel
 * **📑 Detailed Gig Pages & Instant Booking:** Transparent scope breakdown, deliverables list, verified reviews, and a clean booking modal.
 * **👤 Creator Profiles:** Overlapping avatar header, tagline, skills chips, bio, and vital stats (average rating, completed gigs, response time).
 * **⚡ State-Driven Booking Workflow:** Structured booking lifecycle (`pending` &rarr; `accepted` &rarr; `completed`) with creator approval controls.
-* **🌱 Auto-Seeded Database:** Zero manual setup required—launches pre-populated with realistic creators, services, bookings, and reviews on first boot.
+* **🚫 Pure HTML5/CSS3 (Zero JS):** Fully functional using native server-side rendering, GET search parameters, and pure CSS `:target` modals without a single line of JavaScript.
 
 ---
 
@@ -40,17 +40,15 @@ Skill-Swap/
 ├── DECISIONS.md               # 3 Key Architectural Decision Records
 ├── README.md                  # Project overview & quickstart
 ├── static/
-│   ├── css/
-│   │   └── style.css          # Cohesive design system & CSS variables
-│   └── js/
-│       └── main.js            # Client-side tabs, modal logic & live filtering
+│   └── css/
+│       └── style.css          # Cohesive design system & pure CSS modal mechanics
 └── templates/
     ├── base.html              # Floating glass nav & flash messages
     ├── index.html             # Landing page with hero & featured gigs
     ├── login.html             # Polished 16:9 minimalist sign-in
     ├── register.html          # Registration with creator/client role picker
-    ├── marketplace.html       # Filterable & searchable service catalog
-    ├── service_detail.html    # Detailed gig view, reviews & booking modal
+    ├── marketplace.html       # Filterable & searchable service catalog (pure HTML)
+    ├── service_detail.html    # Detailed gig view, reviews & pure CSS booking modal
     ├── profile.html           # Creator profile with avatar, skills & stats
     └── dashboard.html         # Dual-view dashboard (Creator View vs. Client View)
 ```
@@ -75,21 +73,6 @@ pip install -r requirements.txt
 python app.py
 ```
 Open your browser at **`http://127.0.0.1:5000`**.
-
----
-
-## 👥 Demo Test Accounts
-
-The SQLite database (`instance/skillswap.db`) seeds automatically on initial startup with these ready-to-test accounts:
-
-| Role | Username | Email | Password | Notable Offering |
-| :--- | :--- | :--- | :--- | :--- |
-| **Creator** | `aria_design` | `aria@skillswap.io` | `creator123` | Minimalist Brand Identity & Logo Suite ($65) |
-| **Creator** | `marcus_edits` | `marcus@skillswap.io` | `creator123` | High-Retention Video & Reels Editing ($45) |
-| **Creator** | `priya_tutors` | `priya@skillswap.io` | `creator123` | 1-on-1 Python & STEM Tutoring ($40) |
-| **Creator** | `liam_beats` | `liam@skillswap.io` | `creator123` | Custom Lo-Fi & Synthwave Beats ($50) |
-| **Client** | `jordan_maker` | `jordan@skillswap.io` | `client123` | Active client with booked gigs & reviews |
-| **Client** | `sam_green` | `sam@skillswap.io` | `client123` | Student filmmaker exploring sound & edit gigs |
 
 ---
 

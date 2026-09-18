@@ -28,14 +28,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #1e293b;
-      
-      /* Soft radial blend: Ice Blue (#EAF4FC) transitioning to Pastel Lavender (#E8D7F9) */
+      color: #f8fafc;
+      background-color: #0b0f19;
       background: radial-gradient(
-        ellipse 90% 80% at 30% 40%,
-        #EAF4FC 0%,
-        #f2ecfa 55%,
-        #E8D7F9 100%
+        ellipse 90% 80% at 30% 20%,
+        #111827 0%,
+        #0b0f19 55%,
+        #060911 100%
       );
       background-attachment: fixed;
       padding: 1.5rem;
@@ -52,12 +51,12 @@
       align-items: center;
       gap: 2rem;
       padding: 0.65rem 2rem;
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 9999px;
-      box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.05);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
       z-index: 10;
     }
 
@@ -65,30 +64,30 @@
       text-decoration: none;
       font-size: 0.925rem;
       font-weight: 500;
-      color: #475569;
+      color: #94a3b8;
       transition: color 0.2s ease;
     }
 
     .top-nav a:hover {
-      color: #0f172a;
+      color: #f8fafc;
     }
 
     .top-nav a.active {
-      color: #1d6ae5;
+      color: #3b82f6;
       font-weight: 600;
     }
 
     /* Centered Login Card */
     .auth-card {
-      background: #ffffff;
+      background: #131b2e;
       width: 100%;
       max-width: 440px;
       border-radius: 16px;
       padding: 2.75rem 2.5rem;
       box-shadow:
-        0 10px 25px -5px rgba(50, 65, 95, 0.05),
-        0 20px 40px -10px rgba(100, 75, 140, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+        0 10px 30px -5px rgba(0, 0, 0, 0.5),
+        0 20px 40px -10px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -112,14 +111,14 @@
     .card-title {
       font-size: 1.45rem;
       font-weight: 700;
-      color: #0f172a;
+      color: #f8fafc;
       letter-spacing: -0.02em;
       margin-bottom: 0.45rem;
     }
 
     .card-subtitle {
       font-size: 0.9rem;
-      color: #64748b;
+      color: #94a3b8;
       font-weight: 400;
       line-height: 1.4;
     }
@@ -141,7 +140,7 @@
       left: 1rem;
       width: 18px;
       height: 18px;
-      color: #94a3b8;
+      color: #64748b;
       pointer-events: none;
       transition: color 0.2s ease;
     }
@@ -151,28 +150,28 @@
       padding: 0.825rem 1rem 0.825rem 2.65rem;
       font-size: 0.925rem;
       font-family: inherit;
-      color: #0f172a;
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
+      color: #f8fafc;
+      background-color: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     }
 
     .input-field::placeholder {
-      color: #94a3b8;
+      color: #64748b;
       font-weight: 400;
     }
 
     .input-field:focus {
-      background-color: #ffffff;
-      border-color: #1d6ae5;
-      box-shadow: 0 0 0 3px rgba(29, 106, 229, 0.12);
+      background-color: #131b2e;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
 
     .input-field:focus + .input-icon,
     .input-wrapper:focus-within .input-icon {
-      color: #1d6ae5;
+      color: #3b82f6;
     }
 
     /* Options Row: Remember Me & Forgot Password */
@@ -188,7 +187,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      color: #475569;
+      color: #94a3b8;
       cursor: pointer;
       user-select: none;
     }
@@ -196,20 +195,20 @@
     .remember-me input[type="checkbox"] {
       width: 16px;
       height: 16px;
-      accent-color: #1d6ae5;
+      accent-color: #3b82f6;
       cursor: pointer;
       border-radius: 4px;
     }
 
     .forgot-password {
-      color: #64748b;
+      color: #94a3b8;
       text-decoration: none;
       font-weight: 500;
       transition: color 0.2s ease;
     }
 
     .forgot-password:hover {
-      color: #1d6ae5;
+      color: #3b82f6;
       text-decoration: underline;
     }
 
@@ -217,7 +216,7 @@
     .submit-btn {
       width: 100%;
       padding: 0.875rem 1rem;
-      background-color: #1d6ae5;
+      background-color: #3b82f6;
       color: #ffffff;
       font-family: inherit;
       font-size: 0.95rem;
@@ -225,13 +224,13 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(29, 106, 229, 0.22);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
       transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
     }
 
     .submit-btn:hover {
-      background-color: #175bc9;
-      box-shadow: 0 6px 16px rgba(29, 106, 229, 0.28);
+      background-color: #2563eb;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5);
     }
 
     .submit-btn:active {
@@ -243,11 +242,11 @@
       text-align: center;
       margin-top: 1.75rem;
       font-size: 0.875rem;
-      color: #64748b;
+      color: #94a3b8;
     }
 
     .card-footer a {
-      color: #1d6ae5;
+      color: #3b82f6;
       font-weight: 600;
       text-decoration: none;
       transition: color 0.2s ease;
@@ -256,7 +255,7 @@
 
     .card-footer a:hover {
       text-decoration: underline;
-      color: #175bc9;
+      color: #60a5fa;
     }
 
     /* Responsive adjustment for mobile screens */
@@ -277,10 +276,10 @@
 
   <!-- Floating Minimal Top Navigation -->
   <nav class="top-nav" aria-label="Main Navigation">
-    <a href="#explore">Explore</a>
-    <a href="#about">About</a>
-    <a href="#signin" class="active">Sign In</a>
-    <a href="#register">Register</a>
+    <a href="/marketplace">Explore</a>
+    <a href="/#about">About</a>
+    <a href="/login" class="active">Sign In</a>
+    <a href="/register">Register</a>
   </nav>
 
   <!-- Main Login Card -->
@@ -290,11 +289,10 @@
       <p class="card-subtitle">Sign In to Your Creator &amp; Client Hub</p>
     </header>
 
-    <form action="#" method="POST" autocomplete="on">
+    <form action="/login" method="POST" autocomplete="on">
       <!-- Email Field -->
       <div class="form-group">
         <div class="input-wrapper">
-          <!-- Subtle Envelope SVG Icon -->
           <svg
             class="input-icon"
             xmlns="http://www.w3.org/2000/svg"
@@ -322,7 +320,6 @@
       <!-- Password Field -->
       <div class="form-group">
         <div class="input-wrapper">
-          <!-- Subtle Lock SVG Icon -->
           <svg
             class="input-icon"
             xmlns="http://www.w3.org/2000/svg"
@@ -353,7 +350,7 @@
           <input type="checkbox" name="remember" />
           <span>Remember Me</span>
         </label>
-        <a href="#forgot" class="forgot-password">Forgot Password?</a>
+        <a href="#" class="forgot-password">Forgot Password?</a>
       </div>
 
       <!-- Submit Button -->
@@ -362,10 +359,9 @@
 
     <!-- Footer -->
     <footer class="card-footer">
-      Don't have an account? <a href="#signup">Sign Up</a>
+      Don't have an account? <a href="/register">Sign Up</a>
     </footer>
   </main>
 
 </body>
 </html>
-

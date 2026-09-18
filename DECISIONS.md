@@ -20,7 +20,7 @@ SkillSwap was engineered for rapid iteration, instant local setup, and zero-late
 We chose **Option 2: SSR Monolith with Flask and SQLite**.
 * **Zero Barrier to Entry:** Anyone can clone the repository and run `python app.py` immediately without configuring external database services or installing hundreds of megabytes of `node_modules`.
 * **Atomic Transactions & Fast Queries:** SQLite delivers sub-millisecond local reads and writes for small-to-medium datasets without network round-trips.
-* **Jinja2 Context Simplicity:** Eliminates JSON API boilerplate and token handshake synchronization by maintaining secure, native HTTP-only cookie sessions.
+* **Pure Server-Side HTML Simplicity:** Eliminates JSON API boilerplate and token handshake synchronization by maintaining secure, native HTTP-only cookie sessions with zero template engine dependencies.
 
 ### Trade-offs & Mitigation
 * *Trade-off:* Monolithic SQLite is not naturally horizontally scalable across distributed cloud pods.

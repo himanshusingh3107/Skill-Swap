@@ -1,106 +1,120 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSwap | Create an Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
 
-{% block title %}SkillSwap | Create an Account{% endblock %}
+  <!-- NAVBAR -->
+  <!-- FLASH -->
 
-{% block content %}
-<div style="min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; padding: 1rem 0 3rem 0;">
-  <div class="card" style="max-width: 480px; width: 100%; padding: 2.5rem; border-radius: 16px;">
-    <!-- Header -->
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <h1 style="font-size: 1.45rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-bottom: 0.45rem;">
-        SkillSwap | Join the Network
-      </h1>
-      <p style="font-size: 0.9rem; color: #64748b; font-weight: 400; line-height: 1.4;">
-        Connect with talented creators or offer your own skills
-      </p>
-    </div>
+  <main class="container">
+    <div style="min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 1rem 0 3rem 0;">
+      <div class="card" style="max-width: 480px; width: 100%; padding: 2.5rem; border-radius: 16px;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h1 style="font-size: 1.45rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; margin-bottom: 0.45rem;">
+            SkillSwap | Join the Network
+          </h1>
+          <p style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400; line-height: 1.4;">
+            Connect with talented creators or offer your own skills
+          </p>
+        </div>
 
-    <!-- Registration Form -->
-    <form action="{{ url_for('register') }}" method="POST">
-      <!-- Role Selection -->
-      <div style="margin-bottom: 1.25rem;">
-        <label class="form-label">I want to join as:</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <label style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--surface-alt); font-size: 0.9rem; font-weight: 600;">
-            <input type="radio" name="role" value="creator" {% if role == 'creator' or not role %}checked{% endif %} style="accent-color: var(--primary);" />
-            🎨 Creator
-          </label>
-          <label style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--surface-alt); font-size: 0.9rem; font-weight: 600;">
-            <input type="radio" name="role" value="client" {% if role == 'client' %}checked{% endif %} style="accent-color: var(--primary);" />
-            💼 Client / Learner
-          </label>
+        <!-- Registration Form -->
+        <form action="/register" method="POST">
+          <!-- Role Selection -->
+          <div style="margin-bottom: 1.25rem;">
+            <label class="form-label">I want to join as:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <label style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--surface-alt); font-size: 0.9rem; font-weight: 600;">
+                <input type="radio" name="role" value="creator" <!-- CHECKED_CREATOR --> style="accent-color: var(--primary);" />
+                🎨 Creator
+              </label>
+              <label style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--surface-alt); font-size: 0.9rem; font-weight: 600;">
+                <input type="radio" name="role" value="client" <!-- CHECKED_CLIENT --> style="accent-color: var(--primary);" />
+                💼 Client / Learner
+              </label>
+            </div>
+          </div>
+
+          <!-- Username -->
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              class="form-control"
+              placeholder="e.g. alex_creates"
+              required
+            />
+          </div>
+
+          <!-- Email -->
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              placeholder="alex@example.com"
+              required
+            />
+          </div>
+
+          <!-- Password -->
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              placeholder="Choose a strong password"
+              required
+            />
+          </div>
+
+          <!-- Tagline -->
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label">One-line Tagline (Optional)</label>
+            <input
+              type="text"
+              name="tagline"
+              class="form-control"
+              placeholder="e.g. Brand Identity Designer &amp; Illustrator"
+            />
+          </div>
+
+          <!-- Bio -->
+          <div style="margin-bottom: 1.5rem;">
+            <label class="form-label">Bio (Optional)</label>
+            <textarea
+              name="bio"
+              class="form-control"
+              rows="3"
+              placeholder="Tell other creators what you make and what you're passionate about..."
+            ></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary btn-block" style="border-radius: 10px; padding: 0.875rem 1rem;">
+            Create Account
+          </button>
+        </form>
+
+        <!-- Footer Text -->
+        <div style="text-align: center; margin-top: 1.75rem; font-size: 0.875rem; color: var(--text-muted);">
+          Already have an account? <a href="/login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign In</a>
         </div>
       </div>
-
-      <!-- Username -->
-      <div style="margin-bottom: 1rem;">
-        <label class="form-label">Username</label>
-        <input
-          type="text"
-          name="username"
-          class="form-control"
-          placeholder="e.g. alex_creates"
-          required
-        />
-      </div>
-
-      <!-- Email -->
-      <div style="margin-bottom: 1rem;">
-        <label class="form-label">Email Address</label>
-        <input
-          type="email"
-          name="email"
-          class="form-control"
-          placeholder="alex@example.com"
-          required
-        />
-      </div>
-
-      <!-- Password -->
-      <div style="margin-bottom: 1rem;">
-        <label class="form-label">Password</label>
-        <input
-          type="password"
-          name="password"
-          class="form-control"
-          placeholder="Choose a strong password"
-          required
-        />
-      </div>
-
-      <!-- Tagline -->
-      <div style="margin-bottom: 1rem;">
-        <label class="form-label">One-line Tagline (Optional)</label>
-        <input
-          type="text"
-          name="tagline"
-          class="form-control"
-          placeholder="e.g. Brand Identity Designer &amp; Illustrator"
-        />
-      </div>
-
-      <!-- Bio -->
-      <div style="margin-bottom: 1.5rem;">
-        <label class="form-label">Bio (Optional)</label>
-        <textarea
-          name="bio"
-          class="form-control"
-          rows="3"
-          placeholder="Tell other creators what you make and what you're passionate about..."
-        ></textarea>
-      </div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="btn btn-primary btn-block" style="border-radius: 10px; padding: 0.875rem 1rem;">
-        Create Account
-      </button>
-    </form>
-
-    <!-- Footer Text -->
-    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.875rem; color: #64748b;">
-      Already have an account? <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign In</a>
     </div>
-  </div>
-</div>
-{% endblock %}
+  </main>
 
+</body>
+</html>

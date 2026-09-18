@@ -1,116 +1,96 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSwap | @<!-- USER_USERNAME -->'s Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
 
-{% block title %}SkillSwap | @{{ user.username }}'s Profile{% endblock %}
+  <!-- NAVBAR -->
+  <!-- FLASH -->
 
-{% block content %}
-<div style="max-width: 860px; margin: 0 auto; padding-bottom: 4rem;">
-  <!-- Profile Hero Card -->
-  <div class="profile-hero-card">
-    <!-- Overlapping Circular Avatar -->
-    <div class="profile-avatar-large">
-      {{ user.username[:1].upper() }}
-    </div>
+  <main class="container">
+    <div style="max-width: 860px; margin: 0 auto; padding-bottom: 4rem;">
+      <!-- Profile Hero Card -->
+      <div class="profile-hero-card">
+        <!-- Overlapping Circular Avatar -->
+        <div class="profile-avatar-large">
+          <!-- USER_AVATAR -->
+        </div>
 
-    <!-- Creator Name & Tagline -->
-    <h1 class="profile-name">{{ user.username }}</h1>
-    <p class="profile-tagline">
-      {{ user.tagline or 'Creative Specialist & Community Member' }}
-    </p>
+        <!-- Creator Name & Tagline -->
+        <h1 class="profile-name"><!-- USER_USERNAME --></h1>
+        <p class="profile-tagline">
+          <!-- USER_TAGLINE -->
+        </p>
 
-    <!-- Action Button -->
-    <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
-      <a href="#gigs" class="btn btn-primary">
-        Contact &amp; Book Service
-      </a>
-    </div>
+        <!-- Action Button -->
+        <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+          <a href="#gigs" class="btn btn-primary">
+            Contact &amp; Book Service
+          </a>
+        </div>
 
-    <!-- Two-Column Grid: Core Skills (Left) & Bio (Right) -->
-    <div class="profile-grid-2col">
-      <!-- Left: Core Skills -->
-      <div>
-        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
-          Core Skills &amp; Focus
-        </h3>
-        <div class="skills-list">
-          {% if user.services.count() > 0 %}
-            {% for s in user.services %}
-              <span class="skill-tag">{{ s.category }}</span>
-            {% endfor %}
-            <span class="skill-tag">Collaborative Feedback</span>
-            <span class="skill-tag">Fast Turnaround</span>
-          {% else %}
-            <span class="skill-tag">General Creative</span>
-            <span class="skill-tag">Problem Solving</span>
-          {% endif %}
+        <!-- Two-Column Grid: Core Skills (Left) & Bio (Right) -->
+        <div class="profile-grid-2col">
+          <!-- Left: Core Skills -->
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+              Core Skills &amp; Focus
+            </h3>
+            <div class="skills-list">
+              <!-- USER_SKILLS -->
+            </div>
+          </div>
+
+          <!-- Right: Bio Paragraph -->
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
+              About @<!-- USER_USERNAME -->
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.65; white-space: pre-line;">
+              <!-- USER_BIO -->
+            </p>
+          </div>
+        </div>
+
+        <!-- Stats Row at Bottom -->
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-val">★ <!-- USER_RATING --></div>
+            <div class="stat-lbl">Average Rating</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val"><!-- USER_COMPLETED_GIGS --></div>
+            <div class="stat-lbl">Completed Gigs</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">&lt; 2h</div>
+            <div class="stat-lbl">Avg Response Time</div>
+          </div>
         </div>
       </div>
 
-      <!-- Right: Bio Paragraph -->
-      <div>
-        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
-          About @{{ user.username }}
-        </h3>
-        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.65; white-space: pre-line;">
-          {{ user.bio or 'This creator has not added a detailed bio yet. Check out their active listings below!' }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Stats Row at Bottom -->
-    <div class="stats-row">
-      <div class="stat-item">
-        <div class="stat-val">★ {{ user.rating }}</div>
-        <div class="stat-lbl">Average Rating</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">{{ user.completed_gigs_count }}</div>
-        <div class="stat-lbl">Completed Gigs</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">&lt; 2h</div>
-        <div class="stat-lbl">Avg Response Time</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Creator's Active Listings -->
-  <div id="gigs" style="margin-top: 3.5rem;">
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">Active Services by @{{ user.username }}</h2>
-        <p class="section-desc">Browse and book direct offerings from this creator</p>
-      </div>
-    </div>
-
-    <div class="service-grid">
-      {% for service in user.services %}
-        <a href="{{ url_for('service_detail', id=service.id) }}" class="service-card">
+      <!-- Creator's Active Listings -->
+      <div id="gigs" style="margin-top: 3.5rem;">
+        <div class="section-header">
           <div>
-            <div class="service-card-top">
-              <span class="badge badge-{{ service.category.lower() }}">
-                {{ service.category }}
-              </span>
-              <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">
-                ★ {{ service.average_rating }}
-              </span>
-            </div>
-
-            <h3 class="service-title">{{ service.title }}</h3>
-            <p class="service-desc">{{ service.description }}</p>
+            <h2 class="section-title">Active Services by @<!-- USER_USERNAME --></h2>
+            <p class="section-desc">Browse and book direct offerings from this creator</p>
           </div>
+        </div>
 
-          <div class="service-footer">
-            <div class="creator-name">Book Now &rarr;</div>
-            <div class="service-price">${{ "%.0f"|format(service.price) }}</div>
-          </div>
-        </a>
-      {% else %}
-        <p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--radius-lg);">
-          No active services listed currently.
-        </p>
-      {% endfor %}
+        <div class="service-grid">
+          <!-- CREATOR_SERVICES -->
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-{% endblock %}
+  </main>
 
+</body>
+</html>

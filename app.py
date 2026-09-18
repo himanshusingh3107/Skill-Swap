@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from flask import (
-    Flask, render_template, request, redirect, url_for, flash, session, jsonify
+    Flask, request, redirect, url_for, flash, session, jsonify, abort
 )
 from models import db, User, Service, Booking, Review
 
@@ -16,12 +16,95 @@ def create_app():
 
     db.init_app(app)
 
-    # Inject current logged-in user into templates
-    @app.context_processor
-    def inject_user():
+    # =========================================================================
+    # PURE PYTHON HTML RENDERING HELPERS (ZERO JINJA2)
+    # =========================================================================
+
+    def render_navbar(current_user):
+        if current_user:
+            auth_links = f'''
+              <li><a href="/dashboard">Dashboard</a></li>
+              <li><a href="/profile/{current_user.username}">Profile</a></li>
+              <li><a href="/logout" class="nav-btn">Logout ({current_user.username})</a></li>
+            '''
+        else:
+            auth_links = '''
+              <li><a href="/login">Sign In</a></li>
+              <li><a href="/register" class="nav-btn">Register</a></li>
+            '''
+        return f'''
+        <header class="navbar-wrapper">
+          <nav class="navbar" aria-label="Main Navigation">
+            <a href="/" class="brand-link">
+              Skill<span>Swap</span>
+            </a>
+            <ul class="nav-links">
+              <li><a href="/">Explore</a></li>
+              <li><a href="/marketplace">Marketplace</a></li>
+              {auth_links}
+            </ul>
+          </nav>
+        </header>
+        '''
+
+    def render_flash():
+        messages = session.pop("_flashes", [])
+        if not messages:
+            return ""
+        html = '<div class="flash-container">'
+        for category, message in messages:
+            cat_class = "danger" if category in ["error", "danger"] else category
+            html += f'<div class="alert alert-{cat_class}"><span>{message}</span></div>'
+        html += '</div>'
+        return html
+
+    def render_service_card(s):
+        cat_lower = s.category.lower()
+        creator_name = s.creator.username if s.creator else "Creator"
+        creator_initial = creator_name[0].upper() if creator_name else "C"
+        creator_tagline = s.creator.tagline or "Creator" if s.creator else "Creator"
+        price_str = f"{s.price:.0f}"
+
+        return f'''
+        <a href="/service/{s.id}" class="service-card">
+          <div>
+            <div class="service-card-top">
+              <span class="badge badge-{cat_lower}">{s.category}</span>
+              <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">★ {s.average_rating}</span>
+            </div>
+            <h3 class="service-title">{s.title}</h3>
+            <p class="service-desc">{s.description}</p>
+          </div>
+          <div class="service-footer">
+            <div class="creator-snippet">
+              <div class="avatar-circle">{creator_initial}</div>
+              <div>
+                <div class="creator-name">@{creator_name}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{creator_tagline}</div>
+              </div>
+            </div>
+            <div class="service-price">₹{price_str}</div>
+          </div>
+        </a>
+        '''
+
+    def render_page(filename, replacements=None):
+        template_path = os.path.join(os.path.dirname(__file__), "templates", filename)
+        with open(template_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
         user_id = session.get("user_id")
         current_user = User.query.get(user_id) if user_id else None
-        return {"current_user": current_user}
+
+        content = content.replace("<!-- NAVBAR -->", render_navbar(current_user))
+        content = content.replace("<!-- FLASH -->", render_flash())
+
+        if replacements:
+            for key, val in replacements.items():
+                content = content.replace(f"<!-- {key} -->", str(val))
+                content = content.replace(f"{{{{{key}}}}}", str(val))
+
+        return content
 
     # =========================================================================
     # PUBLIC & MARKETPLACE ROUTES
@@ -29,8 +112,13 @@ def create_app():
 
     @app.route("/")
     def index():
-        featured_services = Service.query.order_by(Service.id.desc()).limit(6).all()
-        return render_template("index.html", featured_services=featured_services)
+        featured = Service.query.order_by(Service.id.desc()).limit(6).all()
+        if featured:
+            cards_html = "".join(render_service_card(s) for s in featured)
+        else:
+            cards_html = '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center; padding: 2rem;">No gigs listed yet.</p>'
+
+        return render_page("index.html", {"FEATURED_SERVICES": cards_html})
 
     @app.route("/marketplace")
     def marketplace():
@@ -47,12 +135,44 @@ def create_app():
             )
 
         services = query.order_by(Service.id.desc()).all()
-        return render_template(
-            "marketplace.html",
-            services=services,
-            selected_category=category,
-            search_query=search_query
-        )
+
+        if services:
+            services_html = "".join(render_service_card(s) for s in services)
+        else:
+            services_html = '''
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No gigs found</h3>
+              <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Try tweaking your search term or category filter.</p>
+              <a href="/marketplace" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+            </div>
+            '''
+
+        # Build category pills HTML
+        q_param = f"&q={search_query}" if search_query else ""
+        all_active = "active" if not category else ""
+        des_active = "active" if category.lower() == "design" else ""
+        edi_active = "active" if category.lower() == "editing" else ""
+        tut_active = "active" if category.lower() == "tutoring" else ""
+        mus_active = "active" if category.lower() == "music" else ""
+
+        category_pills_html = f'''
+          <a href="/marketplace{('?q=' + search_query) if search_query else ''}" class="pill-btn {all_active}">All Categories</a>
+          <a href="/marketplace?category=Design{q_param}" class="pill-btn {des_active}">🎨 Design</a>
+          <a href="/marketplace?category=Editing{q_param}" class="pill-btn {edi_active}">🎬 Editing</a>
+          <a href="/marketplace?category=Tutoring{q_param}" class="pill-btn {tut_active}">📚 Tutoring</a>
+          <a href="/marketplace?category=Music{q_param}" class="pill-btn {mus_active}">🎵 Music</a>
+        '''
+
+        hidden_cat = f'<input type="hidden" name="category" value="{category}" />' if category else ""
+        clear_btn = f'<a href="/marketplace{("?category=" + category) if category else ""}" class="btn btn-secondary btn-sm" style="border-radius: var(--radius-full); text-decoration: none;">Clear</a>' if search_query else ""
+
+        return render_page("marketplace.html", {
+            "SEARCH_QUERY": search_query,
+            "HIDDEN_CATEGORY_INPUT": hidden_cat,
+            "CLEAR_SEARCH_BTN": clear_btn,
+            "CATEGORY_PILLS": category_pills_html,
+            "SERVICES_GRID": services_html
+        })
 
     @app.route("/services")
     def api_services():
@@ -75,12 +195,117 @@ def create_app():
     @app.route("/service/<int:id>")
     def service_detail(id):
         service = Service.query.get_or_404(id)
-        return render_template("service_detail.html", service=service)
+        user_id = session.get("user_id")
+
+        # Build booking action button
+        if user_id:
+            if user_id == service.creator_id:
+                booking_action = '''
+                <div style="background: var(--surface-alt); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                  This is your own listing
+                </div>
+                '''
+            else:
+                booking_action = '''
+                <a href="#booking-modal" class="btn btn-primary btn-block" style="text-decoration: none;">
+                  Request Service Booking
+                </a>
+                '''
+        else:
+            booking_action = '''
+            <a href="/login" class="btn btn-primary btn-block">
+              Sign In to Book This Service
+            </a>
+            '''
+
+        # Build reviews HTML
+        reviews = service.reviews.all()
+        if reviews:
+            rev_items = []
+            for r in reviews:
+                reviewer_name = r.reviewer.username if r.reviewer else "Anonymous"
+                reviewer_initial = reviewer_name[0].upper() if reviewer_name else "A"
+                stars = "★" * r.rating
+                date_str = r.created_at.strftime("%B %d, %Y")
+                rev_items.append(f'''
+                <div style="padding: 1.25rem 0; border-bottom: 1px solid var(--border);">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                      <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">{reviewer_initial}</div>
+                      <span style="font-weight: 600; font-size: 0.9rem;">@{reviewer_name}</span>
+                    </div>
+                    <span style="color: #f59e0b; font-size: 0.85rem; font-weight: 600;">{stars}</span>
+                  </div>
+                  <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">"{r.comment}"</p>
+                  <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 0.4rem;">{date_str}</div>
+                </div>
+                ''')
+            reviews_html = "".join(rev_items)
+        else:
+            reviews_html = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 1.5rem 0;">No reviews yet. Be the first to book and rate this service!</p>'
+
+        creator_name = service.creator.username if service.creator else "Creator"
+        creator_bio = service.creator.bio or "Active SkillSwap creator."
+        if len(creator_bio) > 140:
+            creator_bio = creator_bio[:140] + "..."
+
+        return render_page("service_detail.html", {
+            "SERVICE_ID": service.id,
+            "SERVICE_TITLE": service.title,
+            "SERVICE_DESCRIPTION": service.description,
+            "SERVICE_CATEGORY": service.category,
+            "SERVICE_CATEGORY_LOWER": service.category.lower(),
+            "SERVICE_RATING": service.average_rating,
+            "SERVICE_PRICE": f"{service.price:.0f}",
+            "REVIEWS_COUNT": len(reviews),
+            "REVIEWS_LIST": reviews_html,
+            "BOOKING_ACTION": booking_action,
+            "CREATOR_USERNAME": creator_name,
+            "CREATOR_AVATAR": creator_name[0].upper() if creator_name else "C",
+            "CREATOR_TAGLINE": service.creator.tagline or "Active Creator",
+            "CREATOR_BIO_SNIPPET": creator_bio
+        })
 
     @app.route("/profile/<username>")
     def profile(username):
         user = User.query.filter_by(username=username).first_or_404()
-        return render_template("profile.html", user=user)
+        services = user.services.all()
+
+        if services:
+            gigs_html = "".join(f'''
+            <a href="/service/{s.id}" class="service-card">
+              <div>
+                <div class="service-card-top">
+                  <span class="badge badge-{s.category.lower()}">{s.category}</span>
+                  <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">★ {s.average_rating}</span>
+                </div>
+                <h3 class="service-title">{s.title}</h3>
+                <p class="service-desc">{s.description}</p>
+              </div>
+              <div class="service-footer">
+                <div class="creator-name">Book Now &rarr;</div>
+                <div class="service-price">₹{s.price:.0f}</div>
+              </div>
+            </a>
+            ''' for s in services)
+
+            categories = list(set(s.category for s in services))
+            skills_html = "".join(f'<span class="skill-tag">{cat}</span>' for cat in categories)
+            skills_html += '<span class="skill-tag">Collaborative Feedback</span><span class="skill-tag">Fast Turnaround</span>'
+        else:
+            gigs_html = '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--radius-lg);">No active services listed currently.</p>'
+            skills_html = '<span class="skill-tag">General Creative</span><span class="skill-tag">Problem Solving</span>'
+
+        return render_page("profile.html", {
+            "USER_USERNAME": user.username,
+            "USER_AVATAR": user.username[0].upper() if user.username else "U",
+            "USER_TAGLINE": user.tagline or "Creative Specialist & Community Member",
+            "USER_BIO": user.bio or "This creator has not added a detailed bio yet. Check out their active listings below!",
+            "USER_RATING": user.rating,
+            "USER_COMPLETED_GIGS": user.completed_gigs_count,
+            "USER_SKILLS": skills_html,
+            "CREATOR_SERVICES": gigs_html
+        })
 
     # =========================================================================
     # AUTHENTICATION ROUTES
@@ -103,15 +328,24 @@ def create_app():
 
             if not username or not email or not password:
                 flash("Please fill out all required fields.", "error")
-                return render_template("register.html", role=role)
+                return render_page("register.html", {
+                    "CHECKED_CREATOR": "checked" if role == "creator" else "",
+                    "CHECKED_CLIENT": "checked" if role == "client" else ""
+                })
 
             if User.query.filter_by(username=username).first():
                 flash("Username is already taken. Please pick another.", "error")
-                return render_template("register.html", role=role)
+                return render_page("register.html", {
+                    "CHECKED_CREATOR": "checked" if role == "creator" else "",
+                    "CHECKED_CLIENT": "checked" if role == "client" else ""
+                })
 
             if User.query.filter_by(email=email).first():
                 flash("An account with that email already exists.", "error")
-                return render_template("register.html", role=role)
+                return render_page("register.html", {
+                    "CHECKED_CREATOR": "checked" if role == "creator" else "",
+                    "CHECKED_CLIENT": "checked" if role == "client" else ""
+                })
 
             new_user = User(
                 username=username,
@@ -130,7 +364,10 @@ def create_app():
             flash(f"Welcome to SkillSwap, @{new_user.username}!", "success")
             return redirect(url_for("dashboard"))
 
-        return render_template("register.html", role=prefill_role)
+        return render_page("register.html", {
+            "CHECKED_CREATOR": "checked" if prefill_role == "creator" else "",
+            "CHECKED_CLIENT": "checked" if prefill_role == "client" else ""
+        })
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -144,13 +381,13 @@ def create_app():
             user = User.query.filter_by(email=email).first()
             if not user or not user.check_password(password):
                 flash("Invalid email or password. Please check your credentials.", "error")
-                return render_template("login.html")
+                return render_page("login.html")
 
             session["user_id"] = user.id
             flash(f"Welcome back, @{user.username}!", "success")
             return redirect(url_for("dashboard"))
 
-        return render_template("login.html")
+        return render_page("login.html")
 
     @app.route("/logout")
     def logout():
@@ -178,7 +415,7 @@ def create_app():
         try:
             price = float(price_raw)
         except ValueError:
-            price = 25.0
+            price = 500.0
 
         if not title or not description:
             flash("Service title and description cannot be empty.", "error")
@@ -234,7 +471,6 @@ def create_app():
         booking = Booking.query.get_or_404(id)
         new_status = request.form.get("status", "").strip().lower()
 
-        # Only the service creator can accept/complete or cancel
         if booking.service.creator_id != user_id and booking.client_id != user_id:
             flash("Unauthorized action.", "error")
             return redirect(url_for("dashboard"))
@@ -249,7 +485,7 @@ def create_app():
         return redirect(url_for("dashboard"))
 
     # =========================================================================
-    # USER DASHBOARD
+    # USER DASHBOARD (CREATOR & CLIENT DUAL VIEW)
     # =========================================================================
 
     @app.route("/dashboard")
@@ -260,242 +496,229 @@ def create_app():
             return redirect(url_for("login"))
 
         user = User.query.get(user_id)
+        active_view = request.args.get("view", user.role).strip().lower()
+        if active_view not in ["creator", "client"]:
+            active_view = user.role if user.role in ["creator", "client"] else "creator"
 
-        # Creator view data: incoming bookings across all services created by user
-        incoming_bookings = Booking.query.join(Service).filter(
-            Service.creator_id == user.id
-        ).order_by(Booking.id.desc()).all()
+        tab_creator_active = "active" if active_view == "creator" else ""
+        tab_client_active = "active" if active_view == "client" else ""
 
-        my_services = Service.query.filter_by(creator_id=user.id).all()
+        if active_view == "creator":
+            incoming = Booking.query.join(Service).filter(
+                Service.creator_id == user.id
+            ).order_by(Booking.id.desc()).all()
 
-        # Calculate estimated creator earnings (sum of accepted & completed bookings)
-        total_earnings = sum(
-            b.service.price for b in incoming_bookings if b.status in ["accepted", "completed"]
-        )
+            my_services = Service.query.filter_by(creator_id=user.id).all()
+            total_earnings = sum(b.service.price for b in incoming if b.status in ["accepted", "completed"])
 
-        # Client view data: bookings made by this user as a client
-        my_bookings = Booking.query.filter_by(client_id=user.id).order_by(Booking.id.desc()).all()
+            # Build incoming bookings table rows
+            if incoming:
+                table_rows = []
+                for b in incoming:
+                    c_name = b.client.username if b.client else "Client"
+                    c_init = c_name[0].upper() if c_name else "C"
+                    date_str = b.created_at.strftime("%b %d, %Y")
+                    
+                    if b.status == "pending":
+                        actions = f'''
+                        <form action="/booking/{b.id}/status" method="POST" style="display: inline;">
+                          <input type="hidden" name="status" value="accepted" />
+                          <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">Accept</button>
+                        </form>
+                        <form action="/booking/{b.id}/status" method="POST" style="display: inline;">
+                          <input type="hidden" name="status" value="cancelled" />
+                          <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">Decline</button>
+                        </form>
+                        '''
+                    elif b.status == "accepted":
+                        actions = f'''
+                        <form action="/booking/{b.id}/status" method="POST" style="display: inline;">
+                          <input type="hidden" name="status" value="completed" />
+                          <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border-color: #10b981; padding: 0.25rem 0.65rem; font-size: 0.75rem;">Mark Done</button>
+                        </form>
+                        '''
+                    else:
+                        actions = '<span style="color: var(--text-subtle); font-size: 0.8rem;">Completed</span>'
 
-        return render_template(
-            "dashboard.html",
-            user=user,
-            my_services=my_services,
-            incoming_bookings=incoming_bookings,
-            my_bookings=my_bookings,
-            total_earnings=total_earnings
-        )
+                    table_rows.append(f'''
+                    <tr>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                          <div class="avatar-circle" style="width: 26px; height: 26px; font-size: 0.75rem;">{c_init}</div>
+                          <strong>@{c_name}</strong>
+                        </div>
+                      </td>
+                      <td>{b.service.title}</td>
+                      <td><strong>₹{b.service.price:.0f}</strong></td>
+                      <td style="color: var(--text-muted); font-size: 0.85rem;">{date_str}</td>
+                      <td><span class="status-badge status-{b.status}">{b.status.capitalize()}</span></td>
+                      <td>{actions}</td>
+                    </tr>
+                    ''')
+                bookings_tbody = "".join(table_rows)
+            else:
+                bookings_tbody = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No incoming booking requests right now.</td></tr>'
+
+            # Build active services grid
+            if my_services:
+                services_grid = "".join(f'''
+                <div class="service-card" style="cursor: default;">
+                  <div>
+                    <div class="service-card-top">
+                      <span class="badge badge-{s.category.lower()}">{s.category}</span>
+                      <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">★ {s.average_rating}</span>
+                    </div>
+                    <h3 class="service-title">{s.title}</h3>
+                    <p class="service-desc">{s.description}</p>
+                  </div>
+                  <div class="service-footer">
+                    <a href="/service/{s.id}" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Preview Listing &rarr;</a>
+                    <div class="service-price">₹{s.price:.0f}</div>
+                  </div>
+                </div>
+                ''' for s in my_services)
+            else:
+                services_grid = '''
+                <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; background: var(--surface); border-radius: var(--radius-lg);">
+                  <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't posted any service listings yet.</p>
+                  <a href="#new-service-modal" class="btn btn-primary btn-sm">Create Your First Listing</a>
+                </div>
+                '''
+
+            view_content = f'''
+            <section>
+              <div class="stats-row" style="margin-bottom: 2.5rem;">
+                <div class="stat-item" style="background: var(--surface);">
+                  <div class="stat-val">₹{total_earnings:.0f}</div>
+                  <div class="stat-lbl">Estimated Earnings</div>
+                </div>
+                <div class="stat-item" style="background: var(--surface);">
+                  <div class="stat-val">{len(incoming)}</div>
+                  <div class="stat-lbl">Incoming Requests</div>
+                </div>
+                <div class="stat-item" style="background: var(--surface);">
+                  <div class="stat-val">{len(my_services)}</div>
+                  <div class="stat-lbl">Active Listings</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.35rem; font-weight: 700;">Incoming Service Requests</h2>
+                <a href="#new-service-modal" class="btn btn-primary btn-sm">+ Post New Service</a>
+              </div>
+
+              <div class="table-card">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Client</th>
+                        <th>Service</th>
+                        <th>Price</th>
+                        <th>Requested Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookings_tbody}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem;">My Active Services</h2>
+              <div class="service-grid">
+                {services_grid}
+              </div>
+            </section>
+            '''
+        else:
+            # Client view
+            my_bookings = Booking.query.filter_by(client_id=user.id).order_by(Booking.id.desc()).all()
+            if my_bookings:
+                rows = []
+                for b in my_bookings:
+                    cr_name = b.service.creator.username if b.service and b.service.creator else "Creator"
+                    date_str = b.created_at.strftime("%b %d, %Y")
+                    rows.append(f'''
+                    <tr>
+                      <td><a href="/service/{b.service.id}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">{b.service.title}</a></td>
+                      <td><a href="/profile/{cr_name}" style="color: var(--primary); text-decoration: none; font-weight: 500;">@{cr_name}</a></td>
+                      <td><span class="badge badge-{b.service.category.lower()}">{b.service.category}</span></td>
+                      <td><strong>₹{b.service.price:.0f}</strong></td>
+                      <td style="color: var(--text-muted); font-size: 0.85rem;">{date_str}</td>
+                      <td><span class="status-badge status-{b.status}">{b.status.capitalize()}</span></td>
+                    </tr>
+                    ''')
+                tbody = "".join(rows)
+            else:
+                tbody = '''
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                    You haven't booked any services yet.
+                    <div style="margin-top: 1rem;">
+                      <a href="/marketplace" class="btn btn-primary btn-sm">Explore Marketplace</a>
+                    </div>
+                  </td>
+                </tr>
+                '''
+
+            view_content = f'''
+            <section>
+              <div style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; font-weight: 700;">My Booked Services</h2>
+                <p class="section-desc">Track progress, statuses, and deliveries from creators</p>
+              </div>
+
+              <div class="table-card">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>Creator</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Order Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tbody}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+            '''
+
+        return render_page("dashboard.html", {
+            "CURRENT_USERNAME": user.username,
+            "CURRENT_ROLE": user.role.capitalize(),
+            "TAB_CREATOR_ACTIVE": tab_creator_active,
+            "TAB_CLIENT_ACTIVE": tab_client_active,
+            "VIEW_CONTENT": view_content
+        })
 
     return app
 
 # =============================================================================
-# DATABASE AUTO-SEED FUNCTION
+# DATABASE INITIALIZATION
 # =============================================================================
 
-def seed_database(app):
-    """Populates SQLite with test creators, services, and reviews on first launch."""
+def init_db(app):
+    """Initializes SQLite database tables without demo accounts."""
     with app.app_context():
         db.create_all()
-
-        if User.query.first() is not None:
-            return  # Database already seeded
-
-        print("--> Auto-seeding SkillSwap SQLite database with initial data...")
-
-        # 1. Creators
-        aria = User(
-            username="aria_design",
-            email="aria@skillswap.io",
-            role="creator",
-            tagline="Brand Identity Designer & Design System Lead",
-            bio="Hey! I'm Aria, a 3rd year visual communications student. I design modern brand kits, typography hierarchies, and vector assets that help indie projects stand out.",
-            rating=4.9
-        )
-        aria.set_password("creator123")
-
-        marcus = User(
-            username="marcus_edits",
-            email="marcus@skillswap.io",
-            role="creator",
-            tagline="Fast-Paced YouTube, TikTok & Reels Editor",
-            bio="Cinematic video editor with 4+ years of Premiere Pro and After Effects experience. I specialize in fast pacing, sound design, and viral retention storytelling.",
-            rating=5.0
-        )
-        marcus.set_password("creator123")
-
-        priya = User(
-            username="priya_tutors",
-            email="priya@skillswap.io",
-            role="creator",
-            tagline="Python, Algorithms & Calculus Peer Mentor",
-            bio="CS sophomore passionate about making complex programming concepts stick. I break down data structures, recursion, and web basics step-by-step.",
-            rating=4.8
-        )
-        priya.set_password("creator123")
-
-        liam = User(
-            username="liam_beats",
-            email="liam@skillswap.io",
-            role="creator",
-            tagline="Audio Engineer & Chill Lo-Fi Producer",
-            bio="Music producer crafting royalty-free custom background music, game audio assets, and pristine podcast vocal mix/mastering.",
-            rating=4.9
-        )
-        liam.set_password("creator123")
-
-        # 2. Clients
-        jordan = User(
-            username="jordan_maker",
-            email="jordan@skillswap.io",
-            role="client",
-            tagline="Indie Hacker & Web App Builder",
-            bio="Building bootstrapped SaaS tools and looking for talented creators to partner with on visual branding and promotional videos.",
-            rating=5.0
-        )
-        jordan.set_password("client123")
-
-        sam = User(
-            username="sam_green",
-            email="sam@skillswap.io",
-            role="client",
-            tagline="Student Filmmaker & Creator",
-            bio="Producing student documentaries and short web series. Constantly searching for original sound tracks and motion graphic titles.",
-            rating=5.0
-        )
-        sam.set_password("client123")
-
-        db.session.add_all([aria, marcus, priya, liam, jordan, sam])
-        db.session.commit()
-
-        # 3. Services Across Categories
-        s1 = Service(
-            title="Minimalist Brand Identity & Logo Suite",
-            description="Complete vector logo marks, color palette guide, and typography pairings delivered in Figma, SVG, and high-res PNG. Includes 2 revision rounds and direct handoff.",
-            category="Design",
-            price=65.0,
-            creator_id=aria.id
-        )
-
-        s2 = Service(
-            title="Modern UI/UX Wireframe & Figma Component Kit",
-            description="Turn your product idea into sleek, accessible interface prototypes. Includes component library, mobile & desktop responsive layouts, and interactive click-through.",
-            category="Design",
-            price=90.0,
-            creator_id=aria.id
-        )
-
-        s3 = Service(
-            title="High-Retention YouTube & Short-Form Reel Editing",
-            description="Dynamic cuts, subtitling animations, sound effects, B-roll integration, and pacing optimized to hold audience attention on TikTok, Reels, or YouTube.",
-            category="Editing",
-            price=45.0,
-            creator_id=marcus.id
-        )
-
-        s4 = Service(
-            title="Podcast Audio Polish & Noise Reduction Master",
-            description="Remove background hiss, mouth clicks, and room echo. Balanced EQ, loudness normalization (-16 LUFS), and custom intro/outro placement.",
-            category="Editing",
-            price=35.0,
-            creator_id=marcus.id
-        )
-
-        s5 = Service(
-            title="1-on-1 Python & Data Structures Crash Course",
-            description="60-minute interactive live coding session. We conquer OOP, list comprehensions, recursion, or debug your course projects together.",
-            category="Tutoring",
-            price=40.0,
-            creator_id=priya.id
-        )
-
-        s6 = Service(
-            title="Calculus & Linear Algebra Problem-Solving Clinic",
-            description="No robotic formulas—just intuitive explanations and walkthroughs for derivatives, integrals, matrix transformations, and exam prep.",
-            category="Tutoring",
-            price=35.0,
-            creator_id=priya.id
-        )
-
-        s7 = Service(
-            title="Custom Chill Lo-Fi & Synthwave Background Beats",
-            description="Exclusive, 100% royalty-free instrumental audio for your YouTube videos, game soundtracks, or streaming channel. Includes stem audio files.",
-            category="Music",
-            price=50.0,
-            creator_id=liam.id
-        )
-
-        s8 = Service(
-            title="Vocal Tuning, Mixing & Stereo Master",
-            description="Bring clarity and punch to your vocal recordings. Includes Pitch Correction (Melodyne style), reverb shaping, and master bus compression.",
-            category="Music",
-            price=55.0,
-            creator_id=liam.id
-        )
-
-        db.session.add_all([s1, s2, s3, s4, s5, s6, s7, s8])
-        db.session.commit()
-
-        # 4. Realistic Reviews
-        r1 = Review(
-            service_id=s1.id,
-            reviewer_id=jordan.id,
-            rating=5,
-            comment="Aria crushed our brand identity! The color palette and logo variations were ready to ship right away. Super prompt communication."
-        )
-        r2 = Review(
-            service_id=s3.id,
-            reviewer_id=sam.id,
-            rating=5,
-            comment="Marcus cut my documentary trailer down to a gripping 60-second teaser. The sound design timing was spot on."
-        )
-        r3 = Review(
-            service_id=s5.id,
-            reviewer_id=jordan.id,
-            rating=5,
-            comment="Priya helped me understand graph traversal algorithms in 45 minutes when my professor's lecture made zero sense. Highly recommend!"
-        )
-        r4 = Review(
-            service_id=s7.id,
-            reviewer_id=sam.id,
-            rating=5,
-            comment="The lo-fi background track Liam produced fit the mood of my short film flawlessly. Real instrumentation and great warmth."
-        )
-
-        # 5. Sample Bookings
-        b1 = Booking(
-            service_id=s1.id,
-            client_id=jordan.id,
-            status="completed",
-            created_at=datetime.utcnow()
-        )
-        b2 = Booking(
-            service_id=s3.id,
-            client_id=sam.id,
-            status="accepted",
-            created_at=datetime.utcnow()
-        )
-        b3 = Booking(
-            service_id=s7.id,
-            client_id=jordan.id,
-            status="pending",
-            created_at=datetime.utcnow()
-        )
-
-        db.session.add_all([r1, r2, r3, r4, b1, b2, b3])
-        db.session.commit()
-        print("--> Auto-seeding complete! Test accounts and services ready.")
 
 
 # App entry point
 app = create_app()
 
 if __name__ == "__main__":
-    seed_database(app)
+    init_db(app)
     print("\n========================================================")
     print(" 🚀 SkillSwap is live at http://127.0.0.1:5000")
-    print(" Demo Accounts:")
-    print("   Creator: aria@skillswap.io / creator123")
-    print("   Creator: marcus@skillswap.io / creator123")
-    print("   Client:  jordan@skillswap.io / client123")
     print("========================================================\n")
     app.run(debug=True, port=5000)
-
