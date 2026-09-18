@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}SkillSwap | {{ service.title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+  <a href="{{ url_for('marketplace') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+    &larr; Back to Marketplace
+  </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1.15fr; gap: 2.25rem; align-items: start; margin-bottom: 4rem;">
+  <!-- Left Column: Details, Deliverables & Reviews -->
+  <div>
+    <!-- Main Service Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <span class="badge badge-{{ service.category.lower() }}" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+          {{ service.category }}
+        </span>
+        <div style="font-size: 0.95rem; font-weight: 600; color: #f59e0b;">
+          ★ {{ service.average_rating }} ({{ service.reviews.count() }} reviews)
+        </div>
+      </div>
+
+      <h1 style="font-size: 1.85rem; font-weight: 800; line-height: 1.25; margin-bottom: 1.5rem; letter-spacing: -0.02em;">
+        {{ service.title }}
+      </h1>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1rem;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">About This Service</h3>
+        <p style="color: var(--text-muted); line-height: 1.7; font-size: 0.975rem; white-space: pre-line;">
+          {{ service.description }}
+        </p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.75rem;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">What's Included</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-muted); font-size: 0.925rem;">
+          <li style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: #10b981; font-weight: bold;">✓</span> 1-on-1 collaborative peer exchange
+          </li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: #10b981; font-weight: bold;">✓</span> Complete source files &amp; revisions
+          </li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: #10b981; font-weight: bold;">✓</span> SkillSwap peer protection guarantee
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Peer Reviews</h3>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">
+          {{ service.reviews.count() }} total review{% if service.reviews.count() != 1 %}s{% endif %}
+        </span>
+      </div>
+
+      {% for review in service.reviews %}
+        <div style="padding: 1.25rem 0; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                {{ review.reviewer.username[:1].upper() }}
+              </div>
+              <span style="font-weight: 600; font-size: 0.9rem;">@{{ review.reviewer.username }}</span>
+            </div>
+            <span style="color: #f59e0b; font-size: 0.85rem; font-weight: 600;">
+              {% for _ in range(review.rating) %}★{% endfor %}
+            </span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
+            "{{ review.comment }}"
+          </p>
+          <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 0.4rem;">
+            {{ review.created_at.strftime('%B %d, %Y') }}
+          </div>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 1.5rem 0;">
+          No reviews yet. Be the first to book and rate this service!
+        </p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right Column: Pricing & Booking Card + Creator Info -->
+  <div>
+    <!-- Sticky Pricing Card -->
+    <div class="card" style="position: sticky; top: 5.5rem; margin-bottom: 1.5rem;">
+      <div style="margin-bottom: 1.25rem;">
+        <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">
+          Service Rate
+        </span>
+        <div style="font-size: 2.25rem; font-weight: 800; color: var(--primary); margin-top: 0.25rem;">
+          ${{ "%.0f"|format(service.price) }}
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          Fixed pricing • No hidden commissions
+        </div>
+      </div>
+
+      <div style="padding: 1rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; font-size: 0.885rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.6rem;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Category:</span>
+          <strong style="color: var(--text-main);">{{ service.category }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Delivery Time:</span>
+          <strong style="color: var(--text-main);">2-3 Days avg</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Revisions:</span>
+          <strong style="color: var(--text-main);">Unlimited</strong>
+        </div>
+      </div>
+
+      {% if current_user %}
+        {% if current_user.id == service.creator_id %}
+          <div style="background: var(--surface-alt); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+            This is your own listing
+          </div>
+        {% else %}
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            data-modal-target="booking-modal"
+          >
+            Request Service Booking
+          </button>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-block">
+          Sign In to Book This Service
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Creator Profile Snippet -->
+    <div class="card">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+        <div class="avatar-circle" style="width: 48px; height: 48px; font-size: 1.25rem;">
+          {{ service.creator.username[:1].upper() }}
+        </div>
+        <div>
+          <h4 style="font-size: 1.05rem; font-weight: 700;">
+            <a href="{{ url_for('profile', username=service.creator.username) }}" style="color: inherit; text-decoration: none;">
+              @{{ service.creator.username }}
+            </a>
+          </h4>
+          <div style="font-size: 0.825rem; color: var(--text-muted);">
+            {{ service.creator.tagline or 'Active Creator' }}
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size: 0.885rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+        {{ service.creator.bio[:140] }}{% if service.creator.bio|length > 140 %}...{% endif %}
+      </p>
+
+      <a
+        href="{{ url_for('profile', username=service.creator.username) }}"
+        class="btn btn-secondary btn-block btn-sm"
+      >
+        View Full Creator Profile &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Request Modal -->
+<div class="modal-backdrop" id="booking-modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">Confirm Booking Request</h3>
+      <button type="button" class="close-btn" data-modal-close>&times;</button>
+    </div>
+
+    <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST">
+      <div style="margin-bottom: 1.25rem;">
+        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.25rem;">Service:</div>
+        <div style="font-weight: 700; font-size: 1.05rem;">{{ service.title }}</div>
+      </div>
+
+      <div style="background: var(--surface-alt); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+          <span>Service Price:</span>
+          <strong>${{ "%.0f"|format(service.price) }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+          <span>Platform Fee:</span>
+          <span style="color: #10b981; font-weight: 600;">$0 (Free for Hackathon)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1rem; font-weight: 800; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.5rem;">
+          <span>Total:</span>
+          <span style="color: var(--primary);">${{ "%.0f"|format(service.price) }}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" data-modal-close>
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" style="flex: 1;">
+          Confirm Booking
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

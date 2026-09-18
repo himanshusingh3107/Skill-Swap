@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSwap | Sign In</title>
+  
+  <!-- Inter Font for clean, crisp typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* Reset & Base Setup */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1e293b;
+      
+      /* Soft radial blend: Ice Blue (#EAF4FC) transitioning to Pastel Lavender (#E8D7F9) */
+      background: radial-gradient(
+        ellipse 90% 80% at 30% 40%,
+        #EAF4FC 0%,
+        #f2ecfa 55%,
+        #E8D7F9 100%
+      );
+      background-attachment: fixed;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    /* Floating Top Navigation Bar */
+    .top-nav {
+      position: absolute;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 0.65rem 2rem;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 9999px;
+      box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.05);
+      z-index: 10;
+    }
+
+    .top-nav a {
+      text-decoration: none;
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: #475569;
+      transition: color 0.2s ease;
+    }
+
+    .top-nav a:hover {
+      color: #0f172a;
+    }
+
+    .top-nav a.active {
+      color: #1d6ae5;
+      font-weight: 600;
+    }
+
+    /* Centered Login Card */
+    .auth-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 2.75rem 2.5rem;
+      box-shadow:
+        0 10px 25px -5px rgba(50, 65, 95, 0.05),
+        0 20px 40px -10px rgba(100, 75, 140, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card Header */
+    .card-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .card-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.45rem;
+    }
+
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      width: 18px;
+      height: 18px;
+      color: #94a3b8;
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 0.825rem 1rem 0.825rem 2.65rem;
+      font-size: 0.925rem;
+      font-family: inherit;
+      color: #0f172a;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .input-field::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .input-field:focus {
+      background-color: #ffffff;
+      border-color: #1d6ae5;
+      box-shadow: 0 0 0 3px rgba(29, 106, 229, 0.12);
+    }
+
+    .input-field:focus + .input-icon,
+    .input-wrapper:focus-within .input-icon {
+      color: #1d6ae5;
+    }
+
+    /* Options Row: Remember Me & Forgot Password */
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1.25rem 0 1.75rem 0;
+      font-size: 0.85rem;
+    }
+
+    .remember-me {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #475569;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #1d6ae5;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .forgot-password {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-password:hover {
+      color: #1d6ae5;
+      text-decoration: underline;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background-color: #1d6ae5;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(29, 106, 229, 0.22);
+      transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #175bc9;
+      box-shadow: 0 6px 16px rgba(29, 106, 229, 0.28);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.99);
+    }
+
+    /* Footer Text */
+    .card-footer {
+      text-align: center;
+      margin-top: 1.75rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .card-footer a {
+      color: #1d6ae5;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+      margin-left: 0.2rem;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
+      color: #175bc9;
+    }
+
+    /* Responsive adjustment for mobile screens */
+    @media (max-width: 540px) {
+      .top-nav {
+        top: 1.25rem;
+        gap: 1.25rem;
+        padding: 0.5rem 1.25rem;
+      }
+      
+      .auth-card {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Minimal Top Navigation -->
+  <nav class="top-nav" aria-label="Main Navigation">
+    <a href="#explore">Explore</a>
+    <a href="#about">About</a>
+    <a href="#signin" class="active">Sign In</a>
+    <a href="#register">Register</a>
+  </nav>
+
+  <!-- Main Login Card -->
+  <main class="auth-card">
+    <header class="card-header">
+      <h1 class="card-title">SkillSwap | Welcome Back</h1>
+      <p class="card-subtitle">Sign In to Your Creator &amp; Client Hub</p>
+    </header>
+
+    <form action="#" method="POST" autocomplete="on">
+      <!-- Email Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <!-- Subtle Envelope SVG Icon -->
+          <svg
+            class="input-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.8"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+            />
+          </svg>
+          <input
+            type="email"
+            class="input-field"
+            placeholder="Email"
+            required
+            aria-label="Email Address"
+          />
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <!-- Subtle Lock SVG Icon -->
+          <svg
+            class="input-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.8"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
+          </svg>
+          <input
+            type="password"
+            class="input-field"
+            placeholder="Password"
+            required
+            aria-label="Password"
+          />
+        </div>
+      </div>
+
+      <!-- Options Row -->
+      <div class="options-row">
+        <label class="remember-me">
+          <input type="checkbox" name="remember" />
+          <span>Remember Me</span>
+        </label>
+        <a href="#forgot" class="forgot-password">Forgot Password?</a>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn">Sign In</button>
+    </form>
+
+    <!-- Footer -->
+    <footer class="card-footer">
+      Don't have an account? <a href="#signup">Sign Up</a>
+    </footer>
+  </main>
+
+</body>
+</html>
+

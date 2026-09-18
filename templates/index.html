@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}SkillSwap | A Peer-to-Peer Marketplace for Young Creators{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-pill">
+    🚀 Built for young creators, indie makers &amp; students
+  </div>
+  <h1>
+    SKILLSWAP: A Peer-to-Peer Marketplace for <span>Young Creators</span>
+  </h1>
+  <p>
+    Skip the agency fees and corporate middlemen. Trade your creative craft, book talented peers,
+    and build real portfolio experience on your own terms.
+  </p>
+  <div class="hero-actions">
+    <a href="{{ url_for('marketplace') }}" class="btn btn-primary">
+      Explore Services
+    </a>
+    <a href="{{ url_for('register', role='creator') }}" class="btn btn-secondary">
+      Become a Creator
+    </a>
+  </div>
+</section>
+
+<!-- Category Filter Shortcuts -->
+<section style="margin-bottom: 3.5rem;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Popular Categories</h2>
+      <p class="section-desc">Browse services by specialized creative disciplines</p>
+    </div>
+  </div>
+  
+  <div class="category-strip">
+    <a href="{{ url_for('marketplace', category='Design') }}" class="category-card">
+      <span class="cat-icon">🎨</span>
+      <span class="cat-name">Design</span>
+    </a>
+    <a href="{{ url_for('marketplace', category='Editing') }}" class="category-card">
+      <span class="cat-icon">🎬</span>
+      <span class="cat-name">Editing</span>
+    </a>
+    <a href="{{ url_for('marketplace', category='Tutoring') }}" class="category-card">
+      <span class="cat-icon">📚</span>
+      <span class="cat-name">Tutoring</span>
+    </a>
+    <a href="{{ url_for('marketplace', category='Music') }}" class="category-card">
+      <span class="cat-icon">🎵</span>
+      <span class="cat-name">Music</span>
+    </a>
+  </div>
+</section>
+
+<!-- Featured Service Cards Grid -->
+<section style="margin-bottom: 4rem;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Featured Gigs</h2>
+      <p class="section-desc">Top-rated services from our verified student and indie creators</p>
+    </div>
+    <a href="{{ url_for('marketplace') }}" class="btn btn-outline-primary btn-sm">
+      View All Gigs &rarr;
+    </a>
+  </div>
+
+  <div class="service-grid">
+    {% for service in featured_services %}
+      <a href="{{ url_for('service_detail', id=service.id) }}" class="service-card">
+        <div>
+          <div class="service-card-top">
+            <span class="badge badge-{{ service.category.lower() }}">
+              {{ service.category }}
+            </span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">
+              ★ {{ service.average_rating }}
+            </span>
+          </div>
+
+          <h3 class="service-title">{{ service.title }}</h3>
+          <p class="service-desc">{{ service.description }}</p>
+        </div>
+
+        <div class="service-footer">
+          <div class="creator-snippet">
+            <div class="avatar-circle">
+              {{ service.creator.username[:1].upper() }}
+            </div>
+            <div>
+              <div class="creator-name">@{{ service.creator.username }}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">{{ service.creator.tagline or 'Creator' }}</div>
+            </div>
+          </div>
+          <div class="service-price">${{ "%.0f"|format(service.price) }}</div>
+        </div>
+      </a>
+    {% else %}
+      <p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center; padding: 2rem;">
+        No featured gigs available at the moment. Be the first to list one!
+      </p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+

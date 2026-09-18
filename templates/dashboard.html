@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}SkillSwap | User Dashboard{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 3.5rem;">
+  <!-- Dashboard Header & Switcher -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="section-title" style="font-size: 2rem; margin-bottom: 0.25rem;">
+        Dashboard
+      </h1>
+      <p class="section-desc">
+        Logged in as <strong>@{{ current_user.username }}</strong> ({{ current_user.role|capitalize }})
+      </p>
+    </div>
+
+    <!-- Dual-View Toggle Switcher -->
+    <div class="role-tabs">
+      <button
+        type="button"
+        id="tab-creator-btn"
+        class="tab-btn {% if current_user.role == 'creator' %}active{% endif %}"
+      >
+        🎨 Creator View
+      </button>
+      <button
+        type="button"
+        id="tab-client-btn"
+        class="tab-btn {% if current_user.role == 'client' %}active{% endif %}"
+      >
+        💼 Client View
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CREATOR VIEW SECTION
+       ========================================== -->
+  <section id="creator-view-section" style="display: {% if current_user.role == 'creator' %}block{% else %}none{% endif %};">
+    <!-- Top Metrics Row -->
+    <div class="stats-row" style="margin-bottom: 2.5rem;">
+      <div class="stat-item" style="background: var(--surface);">
+        <div class="stat-val">${{ "%.0f"|format(total_earnings) }}</div>
+        <div class="stat-lbl">Estimated Earnings</div>
+      </div>
+      <div class="stat-item" style="background: var(--surface);">
+        <div class="stat-val">{{ incoming_bookings|length }}</div>
+        <div class="stat-lbl">Pending &amp; Active Requests</div>
+      </div>
+      <div class="stat-item" style="background: var(--surface);">
+        <div class="stat-val">{{ my_services|length }}</div>
+        <div class="stat-lbl">Active Listings</div>
+      </div>
+    </div>
+
+    <!-- Incoming Booking Requests -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <h2 style="font-size: 1.35rem; font-weight: 700;">Incoming Service Requests</h2>
+      <button type="button" class="btn btn-primary btn-sm" data-modal-target="new-service-modal">
+        + Post New Service
+      </button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Service</th>
+              <th>Price</th>
+              <th>Requested Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in incoming_bookings %}
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="avatar-circle" style="width: 26px; height: 26px; font-size: 0.75rem;">
+                      {{ booking.client.username[:1].upper() }}
+                    </div>
+                    <strong>@{{ booking.client.username }}</strong>
+                  </div>
+                </td>
+                <td>{{ booking.service.title }}</td>
+                <td><strong>${{ "%.0f"|format(booking.service.price) }}</strong></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ booking.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                  <span class="status-badge status-{{ booking.status }}">
+                    {{ booking.status|capitalize }}
+                  </span>
+                </td>
+                <td>
+                  {% if booking.status == 'pending' %}
+                    <form action="{{ url_for('update_booking_status', id=booking.id) }}" method="POST" style="display: inline;">
+                      <input type="hidden" name="status" value="accepted" />
+                      <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                        Accept
+                      </button>
+                    </form>
+                    <form action="{{ url_for('update_booking_status', id=booking.id) }}" method="POST" style="display: inline;">
+                      <input type="hidden" name="status" value="cancelled" />
+                      <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                        Decline
+                      </button>
+                    </form>
+                  {% elif booking.status == 'accepted' %}
+                    <form action="{{ url_for('update_booking_status', id=booking.id) }}" method="POST" style="display: inline;">
+                      <input type="hidden" name="status" value="completed" />
+                      <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border-color: #10b981; padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                        Mark Done
+                      </button>
+                    </form>
+                  {% else %}
+                    <span style="color: var(--text-subtle); font-size: 0.8rem;">Completed</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                  No incoming booking requests right now.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Creator's Listed Services -->
+    <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem;">My Active Services</h2>
+    <div class="service-grid">
+      {% for service in my_services %}
+        <div class="service-card" style="cursor: default;">
+          <div>
+            <div class="service-card-top">
+              <span class="badge badge-{{ service.category.lower() }}">
+                {{ service.category }}
+              </span>
+              <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">
+                ★ {{ service.average_rating }}
+              </span>
+            </div>
+            <h3 class="service-title">{{ service.title }}</h3>
+            <p class="service-desc">{{ service.description }}</p>
+          </div>
+          <div class="service-footer">
+            <a href="{{ url_for('service_detail', id=service.id) }}" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">
+              Preview Listing &rarr;
+            </a>
+            <div class="service-price">${{ "%.0f"|format(service.price) }}</div>
+          </div>
+        </div>
+      {% else %}
+        <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; background: var(--surface); border-radius: var(--radius-lg);">
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't posted any service listings yet.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-modal-target="new-service-modal">
+            Create Your First Listing
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ==========================================
+       CLIENT VIEW SECTION
+       ========================================== -->
+  <section id="client-view-section" style="display: {% if current_user.role == 'client' %}block{% else %}none{% endif %};">
+    <div style="margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.35rem; font-weight: 700;">My Booked Services</h2>
+      <p class="section-desc">Track progress, statuses, and deliveries from creators</p>
+    </div>
+
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Creator</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Order Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in my_bookings %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('service_detail', id=booking.service.id) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">
+                    {{ booking.service.title }}
+                  </a>
+                </td>
+                <td>
+                  <a href="{{ url_for('profile', username=booking.service.creator.username) }}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+                    @{{ booking.service.creator.username }}
+                  </a>
+                </td>
+                <td>
+                  <span class="badge badge-{{ booking.service.category.lower() }}">
+                    {{ booking.service.category }}
+                  </span>
+                </td>
+                <td><strong>${{ "%.0f"|format(booking.service.price) }}</strong></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ booking.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                  <span class="status-badge status-{{ booking.status }}">
+                    {{ booking.status|capitalize }}
+                  </span>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                  You haven't booked any services yet.
+                  <div style="margin-top: 1rem;">
+                    <a href="{{ url_for('marketplace') }}" class="btn btn-primary btn-sm">Explore Marketplace</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- New Service Listing Modal -->
+<div class="modal-backdrop" id="new-service-modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">List a New Service</h3>
+      <button type="button" class="close-btn" data-modal-close>&times;</button>
+    </div>
+
+    <form action="{{ url_for('create_service') }}" method="POST">
+      <div style="margin-bottom: 1rem;">
+        <label class="form-label">Service Title</label>
+        <input
+          type="text"
+          name="title"
+          class="form-control"
+          placeholder="e.g. Modern YouTube Thumbnails &amp; Banner Pack"
+          required
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-control" required>
+          <option value="Design">🎨 Design</option>
+          <option value="Editing">🎬 Editing</option>
+          <option value="Tutoring">📚 Tutoring</option>
+          <option value="Music">🎵 Music</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label class="form-label">Price (USD)</label>
+        <input
+          type="number"
+          name="price"
+          step="1"
+          min="5"
+          class="form-control"
+          placeholder="45"
+          required
+        />
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label class="form-label">Service Description &amp; Scope</label>
+        <textarea
+          name="description"
+          rows="4"
+          class="form-control"
+          placeholder="Describe deliverables, turnaround time, tools used, and what clients should provide..."
+          required
+        ></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" data-modal-close>
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" style="flex: 1;">
+          Publish Listing
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SkillSwap | Peer-to-Peer Creator Marketplace{% endblock %}</title>
+
+  <!-- Typography: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Main Style -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Floating Minimal Top Navigation -->
+  <header class="navbar-wrapper">
+    <nav class="navbar" aria-label="Main Navigation">
+      <a href="{{ url_for('index') }}" class="brand-link">
+        Skill<span>Swap</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Explore</a></li>
+        <li><a href="{{ url_for('marketplace') }}">Marketplace</a></li>
+        {% if current_user %}
+          <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('profile', username=current_user.username) }}">Profile</a></li>
+          <li><a href="{{ url_for('logout') }}" class="nav-btn">Logout ({{ current_user.username }})</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Sign In</a></li>
+          <li><a href="{{ url_for('register') }}" class="nav-btn">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Flash Messages Notification Container -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+            <span>{{ message }}</span>
+            <span style="cursor:pointer; margin-left: 1rem;" onclick="this.parentElement.remove()">✕</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Client Script -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

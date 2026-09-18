@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}SkillSwap | Marketplace Catalog{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1 class="section-title" style="font-size: 2.1rem; margin-bottom: 0.5rem;">
+    Explore Creative Services
+  </h1>
+  <p class="section-desc">
+    Discover young creators offering design, editing, tutoring, and music production.
+  </p>
+</div>
+
+<!-- Dynamic Search & Filter Bar -->
+<div class="filter-bar">
+  <div class="search-input-wrap">
+    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+    </svg>
+    <input
+      type="text"
+      id="marketplace-search"
+      placeholder="Search gigs, skills, or creator handles..."
+      value="{{ search_query or '' }}"
+    />
+  </div>
+
+  <div class="category-pills">
+    <a
+      href="{{ url_for('marketplace') }}"
+      class="pill-btn {% if not selected_category %}active{% endif %}"
+    >
+      All Categories
+    </a>
+    <a
+      href="{{ url_for('marketplace', category='Design') }}"
+      class="pill-btn {% if selected_category == 'Design' %}active{% endif %}"
+    >
+      🎨 Design
+    </a>
+    <a
+      href="{{ url_for('marketplace', category='Editing') }}"
+      class="pill-btn {% if selected_category == 'Editing' %}active{% endif %}"
+    >
+      🎬 Editing
+    </a>
+    <a
+      href="{{ url_for('marketplace', category='Tutoring') }}"
+      class="pill-btn {% if selected_category == 'Tutoring' %}active{% endif %}"
+    >
+      📚 Tutoring
+    </a>
+    <a
+      href="{{ url_for('marketplace', category='Music') }}"
+      class="pill-btn {% if selected_category == 'Music' %}active{% endif %}"
+    >
+      🎵 Music
+    </a>
+  </div>
+</div>
+
+<!-- Services Grid -->
+<div class="service-grid" id="services-container">
+  {% for service in services %}
+    <a
+      href="{{ url_for('service_detail', id=service.id) }}"
+      class="service-card"
+      data-category="{{ service.category }}"
+      data-title="{{ service.title }}"
+      data-creator="{{ service.creator.username }}"
+      data-desc="{{ service.description }}"
+    >
+      <div>
+        <div class="service-card-top">
+          <span class="badge badge-{{ service.category.lower() }}">
+            {{ service.category }}
+          </span>
+          <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">
+            ★ {{ service.average_rating }}
+          </span>
+        </div>
+
+        <h3 class="service-title">{{ service.title }}</h3>
+        <p class="service-desc">{{ service.description }}</p>
+      </div>
+
+      <div class="service-footer">
+        <div class="creator-snippet">
+          <div class="avatar-circle">
+            {{ service.creator.username[:1].upper() }}
+          </div>
+          <div>
+            <div class="creator-name">@{{ service.creator.username }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ service.creator.tagline or 'Creator' }}</div>
+          </div>
+        </div>
+        <div class="service-price">${{ "%.0f"|format(service.price) }}</div>
+      </div>
+    </a>
+  {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No gigs found</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Try tweaking your search term or category filter.</p>
+      <a href="{{ url_for('marketplace') }}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
