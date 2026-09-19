@@ -14,13 +14,64 @@ from views import (
 )
 
 
-def create_app():
-    app = Flask(__name__)
-    app.secret_key = os.environ.get("SECRET_KEY", "skillswap-insecure-hackathon-key-2026")
+def load_env():
+    """Simple .env file loader without external dependencies."""
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip('"').strip("'")
+                    if k not in os.environ:
+                        os.environ[k] = v
 
-    # SQLite database configuration
-    os.makedirs(app.instance_path, exist_ok=True)
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(app.instance_path, 'skillswap.db')}"
+load_env()
+
+
+def create_app():
+    app = Flask(
+        __name__,
+        static_folder=os.path.join(os.path.dirname(__file__), "static")
+    )
+    app.secret_key = os.environ.get("SECRET_KEY", "skillswap-production-secret-2026")
+
+    # Database configuration (Turso Cloud DB or Local / Serverless SQLite)
+    turso_url = os.environ.get("TURSO_DATABASE_URL")
+    turso_token = os.environ.get("TURSO_AUTH_TOKEN")
+    connected_turso = False
+
+    if turso_url and turso_token:
+        try:
+            import sqlalchemy_libsql  # noqa: F401
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite+{turso_url}/?secure=true"
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+                "connect_args": {"auth_token": turso_token}
+            }
+            connected_turso = True
+        except Exception:
+            connected_turso = False
+
+    if not connected_turso:
+        if os.environ.get("VERCEL"):
+            import tempfile
+            import shutil
+            temp_dir = "/tmp" if os.path.exists("/tmp") else tempfile.gettempdir()
+            db_path = os.path.join(temp_dir, "skillswap.db")
+            if not os.path.exists(db_path):
+                src_db = os.path.join(os.path.dirname(__file__), "instance", "skillswap.db")
+                if os.path.exists(src_db):
+                    try:
+                        shutil.copy(src_db, db_path)
+                    except Exception:
+                        pass
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+        else:
+            os.makedirs(app.instance_path, exist_ok=True)
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(app.instance_path, 'skillswap.db')}"
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
@@ -32,6 +83,12 @@ def create_app():
         return response
 
     db.init_app(app)
+
+    with app.app_context():
+        try:
+            db.create_all()
+        except Exception:
+            pass
 
     def get_current_user():
         user_id = session.get("user_id")
