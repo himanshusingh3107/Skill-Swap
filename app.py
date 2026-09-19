@@ -1,6 +1,6 @@
 import os
 from flask import (
-    Flask, request, redirect, url_for, flash, session, jsonify
+    Flask, request, redirect, url_for, flash, session, jsonify, send_from_directory
 )
 from models import db, User, Service, Booking, Review
 from views import (
@@ -93,6 +93,30 @@ def create_app():
     def get_current_user():
         user_id = session.get("user_id")
         return User.query.get(user_id) if user_id else None
+
+    # =========================================================================
+    # STATIC ASSET FALLBACK ROUTES (FOR VERCEL SERVERLESS CDN FALLBACK)
+    # =========================================================================
+
+    @app.route("/static/<path:filename>")
+    def custom_static(filename):
+        for candidate_dir in [
+            os.path.join(os.path.dirname(__file__), "public", "static"),
+            os.path.join(os.path.dirname(__file__), "static"),
+        ]:
+            if os.path.exists(os.path.join(candidate_dir, filename)):
+                return send_from_directory(candidate_dir, filename)
+        return send_from_directory(os.path.join(os.path.dirname(__file__), "static"), filename)
+
+    @app.route("/css/<path:filename>")
+    def custom_css(filename):
+        for candidate_dir in [
+            os.path.join(os.path.dirname(__file__), "public", "css"),
+            os.path.join(os.path.dirname(__file__), "static", "css"),
+        ]:
+            if os.path.exists(os.path.join(candidate_dir, filename)):
+                return send_from_directory(candidate_dir, filename)
+        return send_from_directory(os.path.join(os.path.dirname(__file__), "static", "css"), filename)
 
     # =========================================================================
     # ROUTES (PURE, CLEAN PYTHON)
