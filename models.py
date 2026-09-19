@@ -1,6 +1,5 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -22,10 +21,10 @@ class User(db.Model):
     reviews = db.relationship("Review", backref="reviewer", lazy="dynamic")
 
     def set_password(self, password: str):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = password
 
     def check_password(self, password: str) -> bool:
-        return check_password_hash(self.password_hash, password)
+        return self.password_hash == password
 
     @property
     def completed_gigs_count(self) -> int:
