@@ -28,13 +28,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #f8fafc;
-      background-color: #0b0f19;
+      color: #fcf6f0;
+      background-color: #0d0907;
       background: radial-gradient(
         ellipse 90% 80% at 30% 20%,
-        #111827 0%,
-        #0b0f19 55%,
-        #060911 100%
+        #1c150f 0%,
+        #120d09 55%,
+        #080604 100%
       );
       background-attachment: fixed;
       padding: 1.5rem;
@@ -51,12 +51,12 @@
       align-items: center;
       gap: 2rem;
       padding: 0.65rem 2rem;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(20, 14, 10, 0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(224, 169, 109, 0.22);
       border-radius: 9999px;
-      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
 
@@ -64,30 +64,30 @@
       text-decoration: none;
       font-size: 0.925rem;
       font-weight: 500;
-      color: #94a3b8;
+      color: #baa390;
       transition: color 0.2s ease;
     }
 
     .top-nav a:hover {
-      color: #f8fafc;
+      color: #fcf6f0;
     }
 
     .top-nav a.active {
-      color: #3b82f6;
+      color: #D9822B;
       font-weight: 600;
     }
 
     /* Centered Login Card */
     .auth-card {
-      background: #131b2e;
+      background: #1a130e;
       width: 100%;
       max-width: 440px;
       border-radius: 16px;
       padding: 2.75rem 2.5rem;
       box-shadow:
-        0 10px 30px -5px rgba(0, 0, 0, 0.5),
-        0 20px 40px -10px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+        0 10px 30px -5px rgba(0, 0, 0, 0.55),
+        0 20px 40px -10px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(224, 169, 109, 0.14);
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -111,14 +111,14 @@
     .card-title {
       font-size: 1.45rem;
       font-weight: 700;
-      color: #f8fafc;
+      color: #fcf6f0;
       letter-spacing: -0.02em;
       margin-bottom: 0.45rem;
     }
 
     .card-subtitle {
       font-size: 0.9rem;
-      color: #94a3b8;
+      color: #baa390;
       font-weight: 400;
       line-height: 1.4;
     }
@@ -140,7 +140,7 @@
       left: 1rem;
       width: 18px;
       height: 18px;
-      color: #64748b;
+      color: #7d6957;
       pointer-events: none;
       transition: color 0.2s ease;
     }
@@ -150,28 +150,28 @@
       padding: 0.825rem 1rem 0.825rem 2.65rem;
       font-size: 0.925rem;
       font-family: inherit;
-      color: #f8fafc;
-      background-color: #0b1120;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fcf6f0;
+      background-color: #130e09;
+      border: 1px solid rgba(224, 169, 109, 0.14);
       border-radius: 10px;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     }
 
     .input-field::placeholder {
-      color: #64748b;
+      color: #7d6957;
       font-weight: 400;
     }
 
     .input-field:focus {
-      background-color: #131b2e;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      background-color: #1a130e;
+      border-color: #D9822B;
+      box-shadow: 0 0 0 3px rgba(217, 130, 43, 0.25);
     }
 
     .input-field:focus + .input-icon,
     .input-wrapper:focus-within .input-icon {
-      color: #3b82f6;
+      color: #D9822B;
     }
 
     /* Options Row: Remember Me & Forgot Password */
@@ -187,7 +187,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      color: #94a3b8;
+      color: #baa390;
       cursor: pointer;
       user-select: none;
     }
@@ -195,20 +195,20 @@
     .remember-me input[type="checkbox"] {
       width: 16px;
       height: 16px;
-      accent-color: #3b82f6;
+      accent-color: #D9822B;
       cursor: pointer;
       border-radius: 4px;
     }
 
     .forgot-password {
-      color: #94a3b8;
+      color: #baa390;
       text-decoration: none;
       font-weight: 500;
       transition: color 0.2s ease;
     }
 
     .forgot-password:hover {
-      color: #3b82f6;
+      color: #D9822B;
       text-decoration: underline;
     }
 
@@ -216,7 +216,7 @@
     .submit-btn {
       width: 100%;
       padding: 0.875rem 1rem;
-      background-color: #3b82f6;
+      background-color: #D9822B;
       color: #ffffff;
       font-family: inherit;
       font-size: 0.95rem;
@@ -224,13 +224,13 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 4px 14px rgba(217, 130, 43, 0.4);
       transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
     }
 
     .submit-btn:hover {
-      background-color: #2563eb;
-      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5);
+      background-color: #C26E17;
+      box-shadow: 0 6px 18px rgba(217, 130, 43, 0.5);
     }
 
     .submit-btn:active {
@@ -242,11 +242,11 @@
       text-align: center;
       margin-top: 1.75rem;
       font-size: 0.875rem;
-      color: #94a3b8;
+      color: #baa390;
     }
 
     .card-footer a {
-      color: #3b82f6;
+      color: #D9822B;
       font-weight: 600;
       text-decoration: none;
       transition: color 0.2s ease;
@@ -255,7 +255,7 @@
 
     .card-footer a:hover {
       text-decoration: underline;
-      color: #60a5fa;
+      color: #f3c68f;
     }
 
     /* Responsive adjustment for mobile screens */

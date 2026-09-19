@@ -34,18 +34,16 @@ Ever needed a standout logo, polished video edits, or quick Python debugging hel
 
 ```
 Skill-Swap/
-├── app.py                     # Application factory, routing, auth & auto-seed
+├── app.py                     # Application factory, routing, auth & rendering
 ├── models.py                  # SQLAlchemy models (User, Service, Booking, Review)
 ├── requirements.txt           # Python dependencies
-├── DECISIONS.md               # 3 Key Architectural Decision Records
 ├── README.md                  # Project overview & quickstart
 ├── static/
 │   └── css/
 │       └── style.css          # Cohesive design system & pure CSS modal mechanics
 └── templates/
-    ├── base.html              # Floating glass nav & flash messages
     ├── index.html             # Landing page with hero & featured gigs
-    ├── login.html             # Polished 16:9 minimalist sign-in
+    ├── login.html             # Polished minimalist sign-in
     ├── register.html          # Registration with creator/client role picker
     ├── marketplace.html       # Filterable & searchable service catalog (pure HTML)
     ├── service_detail.html    # Detailed gig view, reviews & pure CSS booking modal
@@ -73,12 +71,3 @@ pip install -r requirements.txt
 python app.py
 ```
 Open your browser at **`http://127.0.0.1:5000`**.
-
----
-
-## 🏛️ Architectural Decisions
-
-Refer to [DECISIONS.md](file:///c:/Users/vs623/OneDrive/Desktop/Skill-Swap/DECISIONS.md) for full Architectural Decision Records regarding:
-1. Monolithic Flask + SQLite vs. Decoupled Single-Page App (SPA).
-2. Relational Peer-to-Peer State Machine for Gig Lifecycles.
-3. Zero-Build Native CSS Design System with CSS Variables.
